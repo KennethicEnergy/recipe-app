@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { RecipeProvider } from "@/context/RecipeContext";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "Recipe App",
@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <RecipeProvider>{children}</RecipeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
