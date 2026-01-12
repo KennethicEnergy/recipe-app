@@ -3,13 +3,15 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { Recipe } from "@/types/recipe";
 import { initialRecipes } from "@/data/recipes";
+import { supabaseRecipes } from "@/lib/supabaseRecipes";
 
 type RecipeContextType = {
   recipes: Recipe[];
-  addRecipe: (recipe: Omit<Recipe, "id">) => string;
-  updateRecipe: (id: string, recipe: Recipe) => boolean;
-  deleteRecipe: (id: string) => boolean;
+  addRecipe: (recipe: Omit<Recipe, "id">) => Promise<string>;
+  updateRecipe: (id: string, recipe: Recipe) => Promise<boolean>;
+  deleteRecipe: (id: string) => Promise<boolean>;
   getRecipeById: (id: string) => Recipe | undefined;
+  isLoading: boolean;
 };
 
 const RecipeContext = createContext<RecipeContextType | undefined>(undefined);
@@ -17,27 +19,49 @@ const RecipeContext = createContext<RecipeContextType | undefined>(undefined);
 export function RecipeProvider({ children }: { children: React.ReactNode }) {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Load recipes from localStorage on mount
+  // Load recipes from Supabase or localStorage on mount
   useEffect(() => {
-    const loadRecipes = () => {
-      const stored = localStorage.getItem("recipes");
-      if (stored) {
-        try {
-          setRecipes(JSON.parse(stored));
-        } catch {
-          // Fallback to initial recipes if parse fails
-          setRecipes(initialRecipes);
+    const loadRecipes = async () => {
+      setIsLoading(true);
+      try {
+        // Try to load from Supabase
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        if (supabaseUrl) {
+          const fetchedRecipes = await supabaseRecipes.getAll();
+          if (fetchedRecipes.length > 0) {
+            setRecipes(fetchedRecipes);
+            // Cache in localStorage
+            localStorage.setItem("recipes", JSON.stringify(fetchedRecipes));
+            setIsHydrated(true);
+            return;
+          }
         }
-      } else {
+      } catch (error) {
+        console.error("Failed to load from Supabase, falling back to localStorage:", error);
+      }
+
+      // Fallback to localStorage
+      try {
+        const stored = localStorage.getItem("recipes");
+        if (stored) {
+          setRecipes(JSON.parse(stored));
+        } else {
+          setRecipes(initialRecipes);
+          localStorage.setItem("recipes", JSON.stringify(initialRecipes));
+        }
+      } catch {
         setRecipes(initialRecipes);
       }
       setIsHydrated(true);
+      setIsLoading(false);
     };
+
     loadRecipes();
   }, []);
 
-  // Persist recipes to localStorage whenever they change
+  // Persist recipes to localStorage as cache
   useEffect(() => {
     if (isHydrated) {
       localStorage.setItem("recipes", JSON.stringify(recipes));
@@ -45,37 +69,72 @@ export function RecipeProvider({ children }: { children: React.ReactNode }) {
   }, [recipes, isHydrated]);
 
   const addRecipe = useCallback(
-    (recipe: Omit<Recipe, "id">): string => {
-      const newId = String(Math.max(0, ...recipes.map((r) => parseInt(r.id))) + 1);
-      const newRecipe: Recipe = { ...recipe, id: newId };
-      setRecipes((prev) => [...prev, newRecipe]);
-      return newId;
+    async (recipe: Omit<Recipe, "id">): Promise<string> => {
+      setIsLoading(true);
+      try {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        let newId: string;
+
+        if (supabaseUrl) {
+          // Save to Supabase
+          newId = await supabaseRecipes.add(recipe);
+        } else {
+          // Fallback to localStorage
+          newId = `recipe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        }
+
+        const newRecipe: Recipe = { ...recipe, id: newId };
+        setRecipes((prev) => [...prev, newRecipe]);
+        return newId;
+      } finally {
+        setIsLoading(false);
+      }
     },
-    [recipes]
+    []
   );
 
   const updateRecipe = useCallback(
-    (id: string, updatedRecipe: Recipe): boolean => {
-      const exists = recipes.some((r) => r.id === id);
-      if (exists) {
+    async (id: string, updatedRecipe: Recipe): Promise<boolean> => {
+      setIsLoading(true);
+      try {
+        const exists = recipes.some((r) => r.id === id);
+        if (!exists) return false;
+
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        if (supabaseUrl) {
+          // Update in Supabase
+          await supabaseRecipes.update(id, updatedRecipe);
+        }
+
         setRecipes((prev) =>
           prev.map((r) => (r.id === id ? updatedRecipe : r))
         );
         return true;
+      } finally {
+        setIsLoading(false);
       }
-      return false;
     },
     [recipes]
   );
 
   const deleteRecipe = useCallback(
-    (id: string): boolean => {
-      const exists = recipes.some((r) => r.id === id);
-      if (exists) {
+    async (id: string): Promise<boolean> => {
+      setIsLoading(true);
+      try {
+        const exists = recipes.some((r) => r.id === id);
+        if (!exists) return false;
+
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        if (supabaseUrl) {
+          // Delete from Supabase
+          await supabaseRecipes.delete(id);
+        }
+
         setRecipes((prev) => prev.filter((r) => r.id !== id));
         return true;
+      } finally {
+        setIsLoading(false);
       }
-      return false;
     },
     [recipes]
   );
@@ -94,7 +153,7 @@ export function RecipeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <RecipeContext.Provider
-      value={{ recipes, addRecipe, updateRecipe, deleteRecipe, getRecipeById }}
+      value={{ recipes, addRecipe, updateRecipe, deleteRecipe, getRecipeById, isLoading }}
     >
       {children}
     </RecipeContext.Provider>

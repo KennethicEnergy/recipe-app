@@ -15,7 +15,7 @@ export default function NewRecipePage() {
   const handleSubmit = async (recipe: Recipe) => {
     setIsLoading(true);
     try {
-      const newId = addRecipe(recipe);
+      const newId = await addRecipe(recipe);
       router.push(`/recipes/${newId}`);
     } catch (error) {
       console.error("Failed to add recipe:", error);

@@ -35,7 +35,7 @@ export default function EditRecipePage({
   const handleSubmit = async (updatedRecipe: Recipe) => {
     setIsLoading(true);
     try {
-      const success = updateRecipe(resolvedId, updatedRecipe);
+      const success = await updateRecipe(resolvedId, updatedRecipe);
       if (success) {
         router.push(`/recipes/${resolvedId}`);
       } else {

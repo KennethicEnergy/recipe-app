@@ -38,7 +38,7 @@ export default function RecipeDetailPage({
 		if (!recipe) return;
 		setIsDeleting(true);
 		try {
-			const success = deleteRecipe(resolvedId);
+			const success = await deleteRecipe(resolvedId);
 			if (success) {
 				router.push("/recipes");
 			} else {

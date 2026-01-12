@@ -437,7 +437,7 @@ export default function RecipeForm({
               onChange={(e) => {
                 const tags = e.target.value
                   .split(",")
-                  .map((t) => t.trim())
+                  .map((t) => t.trim().toLowerCase())
                   .filter((t) => t);
                 setRecipe((prev) => ({
                   ...prev,
