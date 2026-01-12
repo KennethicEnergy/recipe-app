@@ -140,7 +140,26 @@ function transformToDB(recipe: Recipe) {
   };
 }
 
-function transformFromDB(dbRecipe: any): Recipe {
+interface DBRecipe {
+  id: string;
+  name: string;
+  description: string;
+  rating_average: number;
+  rating_count: number;
+  prep_minutes: number;
+  cook_minutes: number;
+  total_minutes: number;
+  protein_tags: string[];
+  vegetables_tags: string[];
+  cuisine_tags: string[];
+  meal_type_tags: string[];
+  method_tags: string[];
+  ingredients: Recipe["ingredients"];
+  procedure: Recipe["procedure"];
+  media?: Recipe["media"];
+}
+
+function transformFromDB(dbRecipe: DBRecipe): Recipe {
   return {
     id: dbRecipe.id,
     name: dbRecipe.name,
