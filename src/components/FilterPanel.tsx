@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Recipe } from "@/types/recipe";
+import { Recipe } from "../types/recipe";
 
 type FilterPanelProps = {
   recipes: Recipe[];

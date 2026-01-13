@@ -1,4 +1,4 @@
-import { supabase, isSupabaseEnabled } from "@/lib/supabase";
+import { supabase, isSupabaseEnabled } from "../../lib/supabase";
 import { NextResponse } from "next/server";
 
 export async function GET() {

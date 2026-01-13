@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { getTagColor } from "@/lib";
+import { getTagColor } from "../lib";
 
 type ClickableTagProps = {
   tag: string;

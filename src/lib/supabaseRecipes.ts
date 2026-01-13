@@ -1,5 +1,5 @@
 import { supabase, isSupabaseEnabled } from "./supabase";
-import { Recipe } from "@/types/recipe";
+import { Recipe } from "../types/recipe";
 
 export const supabaseRecipes = {
   // Fetch all recipes

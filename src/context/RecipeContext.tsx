@@ -1,9 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { Recipe } from "@/types/recipe";
-import { initialRecipes } from "@/data/recipes";
-import { supabaseRecipes } from "@/lib/supabaseRecipes";
+import { Recipe } from "../types/recipe";
+import { initialRecipes } from "../data/recipes";
+import { supabaseRecipes } from "../lib/supabaseRecipes";
 
 type RecipeContextType = {
   recipes: Recipe[];

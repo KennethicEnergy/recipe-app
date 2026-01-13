@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Recipe } from "@/types/recipe";
-import { getTagColor } from "@/lib";
+import { Recipe } from "../types/recipe";
+import { getTagColor } from "../lib";
 
 export default function RecipeCard({ recipe }: { recipe: Recipe }) {
   const displayTags = [

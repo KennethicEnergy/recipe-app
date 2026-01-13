@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import RecipeForm from "@/components/RecipeForm";
-import { useRecipes } from "@/context/RecipeContext";
-import { Recipe } from "@/types/recipe";
+import RecipeForm from "../components/RecipeForm";
+import { useRecipes } from "../context/RecipeContext";
+import { Recipe } from "../types/recipe";
 
 export default function NewRecipePage() {
   const router = useRouter();

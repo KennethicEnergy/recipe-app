@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { initialRecipes } from "@/data/recipes";
+import { initialRecipes } from "../data/recipes";
 
 export default function HomePage() {
   const recipeCount = initialRecipes.length;

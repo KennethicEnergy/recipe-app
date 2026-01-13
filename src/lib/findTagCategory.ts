@@ -1,4 +1,4 @@
-import { initialRecipes } from "@/data/recipes";
+import { initialRecipes } from "../data/recipes";
 
 // Helper function to find tag category
 export function findTagCategory(tag: string): string | null {
