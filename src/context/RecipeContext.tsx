@@ -28,26 +28,37 @@ export function RecipeProvider({ children }: { children: React.ReactNode }) {
       try {
         // Try to load from Supabase
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        console.log("[RecipeContext] Supabase URL configured:", supabaseUrl ? "yes" : "no");
+
         if (supabaseUrl) {
+          console.log("[RecipeContext] Attempting to fetch recipes from Supabase...");
           const fetchedRecipes = await supabaseRecipes.getAll();
+          console.log("[RecipeContext] Fetched from Supabase:", fetchedRecipes.length, "recipes");
+
+          // Use Supabase recipes if available, otherwise fall back to localStorage
           if (fetchedRecipes.length > 0) {
             setRecipes(fetchedRecipes);
             // Cache in localStorage
             localStorage.setItem("recipes", JSON.stringify(fetchedRecipes));
             setIsHydrated(true);
+            setIsLoading(false);
             return;
+          } else {
+            console.log("[RecipeContext] Supabase returned empty, checking localStorage...");
           }
         }
       } catch (error) {
-        console.error("Failed to load from Supabase, falling back to localStorage:", error);
+        console.error("[RecipeContext] Failed to load from Supabase, falling back to localStorage:", error);
       }
 
       // Fallback to localStorage
       try {
         const stored = localStorage.getItem("recipes");
         if (stored) {
+          console.log("[RecipeContext] Loading recipes from localStorage");
           setRecipes(JSON.parse(stored));
         } else {
+          console.log("[RecipeContext] No localStorage data, using initial recipes");
           setRecipes(initialRecipes);
           localStorage.setItem("recipes", JSON.stringify(initialRecipes));
         }
