@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { notFound, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import ClickableTag from "../components/ClickableTag";
-import DeleteConfirmModal from "../components/DeleteConfirmModal";
-import { useRecipes } from "../context/RecipeContext";
-import { Recipe } from "../types/recipe";
+import ClickableTag from "../../components/ClickableTag";
+import DeleteConfirmModal from "../../components/DeleteConfirmModal";
+import { useRecipes } from "../../context/RecipeContext";
+import { Recipe } from "../../types/recipe";
 
 export default function RecipeDetailPage({
 	params,
