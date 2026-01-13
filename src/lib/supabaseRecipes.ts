@@ -38,70 +38,79 @@ export const supabaseRecipes = {
     const dbRecipe = transformToDB({ ...recipe, id });
 
     if (!isSupabaseEnabled || !supabase) {
-      console.warn("Supabase not enabled, recipe saved to local only");
+      console.warn("[supabaseRecipes] Supabase not enabled, recipe saved to local only");
       return id; // Just return ID if Supabase not enabled
     }
 
-    console.log("Adding recipe to Supabase:", id);
-    const { data, error } = await supabase.from("recipes").insert([dbRecipe]);
+    console.log("[supabaseRecipes] Adding recipe to Supabase:", id);
+    const { data, error, status } = await supabase.from("recipes").insert([dbRecipe]).select();
 
     if (error) {
-      console.error("Error adding recipe to Supabase:", {
-        error: error.message,
+      console.error("[supabaseRecipes] Error adding recipe to Supabase:", {
+        message: error.message,
         code: error.code,
         details: error.details,
         hint: error.hint,
+        status,
       });
-      throw error;
+      // Don't throw - still add locally even if Supabase fails
+      console.warn("[supabaseRecipes] Recipe will be saved locally only");
+      return id;
     }
 
-    console.log("Recipe added successfully to Supabase:", data);
+    if (!data || data.length === 0) {
+      console.warn("[supabaseRecipes] Recipe insert returned no data, but no error. Status:", status);
+    } else {
+      console.log("[supabaseRecipes] Recipe added successfully to Supabase");
+    }
     return id;
   },
 
   // Update recipe
   async update(id: string, recipe: Omit<Recipe, "id">): Promise<void> {
     if (!isSupabaseEnabled || !supabase) {
-      console.warn("Supabase not enabled, recipe updated locally only");
+      console.warn("[supabaseRecipes] Supabase not enabled, recipe updated locally only");
       return; // Just return if Supabase not enabled
     }
     const dbRecipe = transformToDB({ ...recipe, id });
 
-    console.log("Updating recipe in Supabase:", id);
+    console.log("[supabaseRecipes] Updating recipe in Supabase:", id);
     const { error } = await supabase
       .from("recipes")
       .update(dbRecipe)
       .eq("id", id);
     if (error) {
-      console.error("Error updating recipe:", {
-        error: error.message,
+      console.error("[supabaseRecipes] Error updating recipe:", {
+        message: error.message,
         code: error.code,
         details: error.details,
         hint: error.hint,
       });
-      throw error;
+      console.warn("[supabaseRecipes] Recipe will be updated locally only");
+      return;
     }
-    console.log("Recipe updated successfully in Supabase:", id);
+    console.log("[supabaseRecipes] Recipe updated successfully in Supabase:", id);
   },
 
   // Delete recipe
   async delete(id: string): Promise<void> {
     if (!isSupabaseEnabled || !supabase) {
-      console.warn("Supabase not enabled, recipe deleted locally only");
+      console.warn("[supabaseRecipes] Supabase not enabled, recipe deleted locally only");
       return; // Just return if Supabase not enabled
     }
-    console.log("Deleting recipe from Supabase:", id);
+    console.log("[supabaseRecipes] Deleting recipe from Supabase:", id);
     const { error } = await supabase.from("recipes").delete().eq("id", id);
     if (error) {
-      console.error("Error deleting recipe:", {
-        error: error.message,
+      console.error("[supabaseRecipes] Error deleting recipe:", {
+        message: error.message,
         code: error.code,
         details: error.details,
         hint: error.hint,
       });
-      throw error;
+      console.warn("[supabaseRecipes] Recipe will be deleted locally only");
+      return;
     }
-    console.log("Recipe deleted successfully from Supabase:", id);
+    console.log("[supabaseRecipes] Recipe deleted successfully from Supabase:", id);
   },
 
   // Upload image to storage

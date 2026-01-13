@@ -84,19 +84,35 @@ export function RecipeProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       try {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        console.log("[RecipeContext] Adding recipe. Supabase enabled:", supabaseUrl ? "yes" : "no");
+
         let newId: string;
 
         if (supabaseUrl) {
           // Save to Supabase
-          newId = await supabaseRecipes.add(recipe);
+          console.log("[RecipeContext] Calling supabaseRecipes.add()");
+          try {
+            newId = await supabaseRecipes.add(recipe);
+            console.log("[RecipeContext] Recipe added to Supabase with ID:", newId);
+          } catch (supabaseError) {
+            console.error("[RecipeContext] Supabase add failed:", supabaseError);
+            // Generate local ID if Supabase fails
+            newId = `recipe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            console.log("[RecipeContext] Using local ID:", newId);
+          }
         } else {
           // Fallback to localStorage
+          console.warn("[RecipeContext] Supabase URL not configured, using local ID only");
           newId = `recipe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         }
 
         const newRecipe: Recipe = { ...recipe, id: newId };
+        console.log("[RecipeContext] Setting recipe state with ID:", newId);
         setRecipes((prev) => [...prev, newRecipe]);
         return newId;
+      } catch (err) {
+        console.error("[RecipeContext] Unexpected error in addRecipe:", err);
+        throw err;
       } finally {
         setIsLoading(false);
       }
