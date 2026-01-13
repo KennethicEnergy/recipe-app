@@ -38,10 +38,13 @@ CREATE TABLE recipes (
 CREATE INDEX idx_recipes_name ON recipes(name);
 CREATE INDEX idx_recipes_tags ON recipes USING GIN(protein_tags, vegetables_tags, cuisine_tags, meal_type_tags, method_tags);
 
--- Create storage bucket for recipe images
-INSERT INTO storage.buckets (id, name, public) VALUES ('recipe-images', 'recipe-images', true);
+-- Disable RLS for development (allow public access)
+ALTER TABLE recipes DISABLE ROW LEVEL SECURITY;
 
--- Set bucket policies
+-- Optional: Create storage bucket for recipe images (if it doesn't already exist)
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('recipe-images', 'recipe-images', true);
+
+-- Set bucket policies (if bucket exists)
 CREATE POLICY "Public Access" ON storage.objects
 FOR SELECT USING (bucket_id = 'recipe-images');
 

@@ -38,44 +38,70 @@ export const supabaseRecipes = {
     const dbRecipe = transformToDB({ ...recipe, id });
 
     if (!isSupabaseEnabled || !supabase) {
+      console.warn("Supabase not enabled, recipe saved to local only");
       return id; // Just return ID if Supabase not enabled
     }
 
-    const { error } = await supabase.from("recipes").insert([dbRecipe]);
+    console.log("Adding recipe to Supabase:", id);
+    const { data, error } = await supabase.from("recipes").insert([dbRecipe]);
+
     if (error) {
-      console.error("Error adding recipe:", error);
+      console.error("Error adding recipe to Supabase:", {
+        error: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
       throw error;
     }
+
+    console.log("Recipe added successfully to Supabase:", data);
     return id;
   },
 
   // Update recipe
   async update(id: string, recipe: Omit<Recipe, "id">): Promise<void> {
     if (!isSupabaseEnabled || !supabase) {
+      console.warn("Supabase not enabled, recipe updated locally only");
       return; // Just return if Supabase not enabled
     }
     const dbRecipe = transformToDB({ ...recipe, id });
 
+    console.log("Updating recipe in Supabase:", id);
     const { error } = await supabase
       .from("recipes")
       .update(dbRecipe)
       .eq("id", id);
     if (error) {
-      console.error("Error updating recipe:", error);
+      console.error("Error updating recipe:", {
+        error: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
       throw error;
     }
+    console.log("Recipe updated successfully in Supabase:", id);
   },
 
   // Delete recipe
   async delete(id: string): Promise<void> {
     if (!isSupabaseEnabled || !supabase) {
+      console.warn("Supabase not enabled, recipe deleted locally only");
       return; // Just return if Supabase not enabled
     }
+    console.log("Deleting recipe from Supabase:", id);
     const { error } = await supabase.from("recipes").delete().eq("id", id);
     if (error) {
-      console.error("Error deleting recipe:", error);
+      console.error("Error deleting recipe:", {
+        error: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
       throw error;
     }
+    console.log("Recipe deleted successfully from Supabase:", id);
   },
 
   // Upload image to storage

@@ -77,9 +77,11 @@ export default function RecipeForm({
   ) => {
     setRecipe((prev) => {
       const newIngredients = [...prev.ingredients];
+      // Lowercase and trim the ingredient name
+      const processedValue = field === "name" ? value.toLowerCase().trim() : value.trim();
       newIngredients[index] = {
         ...newIngredients[index],
-        [field]: value,
+        [field]: processedValue,
       };
       return { ...prev, ingredients: newIngredients };
     });
@@ -103,7 +105,8 @@ export default function RecipeForm({
   const handleProcedureChange = (index: number, instruction: string) => {
     setRecipe((prev) => {
       const newProcedure = [...prev.procedure];
-      newProcedure[index] = { ...newProcedure[index], instruction };
+      // Lowercase and trim the procedure instruction
+      newProcedure[index] = { ...newProcedure[index], instruction: instruction.toLowerCase().trim() };
       return { ...prev, procedure: newProcedure };
     });
   };
@@ -438,7 +441,7 @@ export default function RecipeForm({
                 const tags = e.target.value
                   .split(",")
                   .map((t) => t.trim().toLowerCase())
-                  .filter((t) => t);
+                  .filter((t) => t.length > 0);
                 setRecipe((prev) => ({
                   ...prev,
                   tags: { ...prev.tags, [key]: tags },
