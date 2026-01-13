@@ -119,7 +119,7 @@ export const supabaseRecipes = {
       return ""; // Return empty string if Supabase not enabled
     }
     const filename = `${recipeId}_${Date.now()}`;
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from("recipe-images")
       .upload(filename, file, { upsert: true });
 

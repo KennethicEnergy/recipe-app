@@ -1,7 +1,7 @@
 import { supabase, isSupabaseEnabled } from "@/lib/supabase";
 import { NextResponse } from "next/server";
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   if (!isSupabaseEnabled || !supabase) {
     return NextResponse.json(
       { error: "Supabase not configured" },
