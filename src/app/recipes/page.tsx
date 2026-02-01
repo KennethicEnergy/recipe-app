@@ -2,12 +2,12 @@
 
 import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { initialRecipes } from "@/data/recipes";
-import RecipeCard from "@/components/RecipeCard";
-import SearchBar from "@/components/SearchBar";
-import FilterPanel from "@/components/FilterPanel";
+import { initialRecipes } from "../../data/recipes";
+import RecipeCard from "../../components/RecipeCard";
+import SearchBar from "../../components/SearchBar";
+import FilterPanel from "../../components/FilterPanel";
 import Link from "next/link";
-import { findTagCategory } from "@/lib/findTagCategory";
+import { findTagCategory } from "../../lib/findTagCategory";
 
 export default function RecipesPage() {
   const recipes = initialRecipes;
