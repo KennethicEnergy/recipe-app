@@ -21,8 +21,8 @@ export default function RecipeForm({
       description: "",
       rating: { average: 0, count: 0 },
       cookTime: { prepMinutes: 0, cookMinutes: 0, totalMinutes: 0 },
-      ingredients: [],
-      procedure: [],
+      ingredients: [{ name: "", type: "other", amount: "" }],
+      procedure: [{ step: 1, instruction: "" }],
       tags: {
         protein: [],
         vegetables: [],

@@ -2,15 +2,15 @@
 
 import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { initialRecipes } from "../../data/recipes";
 import RecipeCard from "../../components/RecipeCard";
 import SearchBar from "../../components/SearchBar";
 import FilterPanel from "../../components/FilterPanel";
 import Link from "next/link";
 import { findTagCategory } from "../../lib/findTagCategory";
+import { useRecipes } from "../../context/RecipeContext";
 
 export default function RecipesPage() {
-  const recipes = initialRecipes;
+  const { recipes, isLoading } = useRecipes();
 	const searchParams = useSearchParams();
 	const tagParam = searchParams.get("tag");
 
@@ -153,19 +153,30 @@ export default function RecipesPage() {
 				</div>
 
 				<div className="lg:col-span-3">
-					<div className="mb-4 text-yellow-400">
-						{filteredRecipes.length === 0
-							? "No recipes found. Try adjusting your search or filters."
-							: `Showing ${filteredRecipes.length} recipe${
-									filteredRecipes.length !== 1 ? "s" : ""
-							  }`}
-					</div>
+					{isLoading ? (
+						<div className="flex items-center justify-center py-16 text-yellow-400">
+							<div className="text-center">
+								<div className="animate-spin rounded-full h-10 w-10 border-2 border-yellow-500 border-t-transparent mx-auto mb-4" />
+								<p>Loading recipes...</p>
+							</div>
+						</div>
+					) : (
+						<>
+							<div className="mb-4 text-yellow-400">
+								{filteredRecipes.length === 0
+									? "No recipes found. Try adjusting your search or filters."
+									: `Showing ${filteredRecipes.length} recipe${
+											filteredRecipes.length !== 1 ? "s" : ""
+									  }`}
+							</div>
 
-					<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-						{filteredRecipes.map((recipe) => (
-							<RecipeCard key={recipe.id} recipe={recipe} />
-						))}
-					</div>
+							<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+								{filteredRecipes.map((recipe) => (
+									<RecipeCard key={recipe.id} recipe={recipe} />
+								))}
+							</div>
+						</>
+					)}
 				</div>
 			</div>
 		</main>
