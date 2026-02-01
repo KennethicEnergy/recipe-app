@@ -2,39 +2,39 @@
 
 import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import RecipeCard from "../../components/RecipeCard";
-import SearchBar from "../../components/SearchBar";
-import FilterPanel from "../../components/FilterPanel";
+import { initialRecipes } from "@/data/recipes";
+import RecipeCard from "@/components/RecipeCard";
+import SearchBar from "@/components/SearchBar";
+import FilterPanel from "@/components/FilterPanel";
 import Link from "next/link";
-import { findTagCategory } from "../../lib/findTagCategory";
-import { useRecipes } from "../../context/RecipeContext";
+import { findTagCategory } from "@/lib/findTagCategory";
 
 export default function RecipesPage() {
+  const recipes = initialRecipes;
 	const searchParams = useSearchParams();
 	const tagParam = searchParams.get("tag");
-	const { recipes } = useRecipes();
 
 	const [searchQuery, setSearchQuery] = useState("");
 
-	// Initialize filters from URL parameter
-	const [selectedFilters, setSelectedFilters] = useState(() => {
-		const filters = {
-			protein: [] as string[],
-			vegetables: [] as string[],
-			cuisine: [] as string[],
-			mealType: [] as string[],
-			method: [] as string[],
+	const emptyFilters = {
+		protein: [] as string[],
+		vegetables: [] as string[],
+		cuisine: [] as string[],
+		mealType: [] as string[],
+		method: [] as string[],
+	};
+
+	const [selectedFilters, setSelectedFilters] = useState(emptyFilters);
+
+	// Derive effective filters from URL + UI state (avoid setState in effect / cascading renders)
+	const effectiveFilters = useMemo(() => {
+		const category = tagParam ? findTagCategory(tagParam) : null;
+		if (!category || !tagParam) return selectedFilters;
+		return {
+			...selectedFilters,
+			[category]: [tagParam.toLowerCase()],
 		};
-
-		if (tagParam) {
-			const category = findTagCategory(tagParam);
-			if (category) {
-				filters[category as keyof typeof filters] = [tagParam.toLowerCase()];
-			}
-		}
-
-		return filters;
-	});
+	}, [tagParam, selectedFilters]);
 
 	const handleFilterChange = (category: string, value: string) => {
 		setSelectedFilters((prev) => {
@@ -57,43 +57,43 @@ export default function RecipesPage() {
 				recipe.description.toLowerCase().includes(searchQuery.toLowerCase());
 
 			const matchesProtein =
-				selectedFilters.protein.length === 0 ||
+				effectiveFilters.protein.length === 0 ||
 				recipe.tags.protein.some((p) =>
-					selectedFilters.protein.includes(p.toLowerCase())
+					effectiveFilters.protein.includes(p.toLowerCase())
 				) ||
 				recipe.ingredients.some(
 					(ing) =>
 						(ing.type === "meat" || ing.type === "seafood") &&
-						selectedFilters.protein.includes(ing.name.toLowerCase())
+						effectiveFilters.protein.includes(ing.name.toLowerCase())
 				);
 
 			const matchesVegetables =
-				selectedFilters.vegetables.length === 0 ||
+				effectiveFilters.vegetables.length === 0 ||
 				recipe.tags.vegetables.some((v) =>
-					selectedFilters.vegetables.includes(v.toLowerCase())
+					effectiveFilters.vegetables.includes(v.toLowerCase())
 				) ||
 				recipe.ingredients.some(
 					(ing) =>
 						ing.type === "vegetable" &&
-						selectedFilters.vegetables.includes(ing.name.toLowerCase())
+						effectiveFilters.vegetables.includes(ing.name.toLowerCase())
 				);
 
 			const matchesCuisine =
-				selectedFilters.cuisine.length === 0 ||
+				effectiveFilters.cuisine.length === 0 ||
 				recipe.tags.cuisine.some((c) =>
-					selectedFilters.cuisine.includes(c.toLowerCase())
+					effectiveFilters.cuisine.includes(c.toLowerCase())
 				);
 
 			const matchesMealType =
-				selectedFilters.mealType.length === 0 ||
+				effectiveFilters.mealType.length === 0 ||
 				recipe.tags.mealType.some((m) =>
-					selectedFilters.mealType.includes(m.toLowerCase())
+					effectiveFilters.mealType.includes(m.toLowerCase())
 				);
 
 			const matchesMethod =
-				selectedFilters.method.length === 0 ||
+				effectiveFilters.method.length === 0 ||
 				recipe.tags.method.some((m) =>
-					selectedFilters.method.includes(m.toLowerCase())
+					effectiveFilters.method.includes(m.toLowerCase())
 				);
 
 			return (
@@ -105,11 +105,11 @@ export default function RecipesPage() {
 				matchesMethod
 			);
 		});
-	}, [searchQuery, selectedFilters, recipes]);
+	}, [recipes, searchQuery, effectiveFilters]);
 
 	return (
 		<main className="p-6 md:p-10 bg-gray-900 min-h-screen">
-			<div className="flex items-center justify-between mb-6">
+			<div className="flex flex-wrap items-center justify-between gap-4 mb-6">
 				<h1 className="text-3xl font-bold text-yellow-400">
 					<Link
 						href="/"
@@ -131,8 +131,11 @@ export default function RecipesPage() {
 				</h1>
 				<Link
 					href="/recipes/new"
-					className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded transition-colors">
-					+ New Recipe
+					className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold rounded-lg transition-colors">
+					<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+					</svg>
+					Add Recipe
 				</Link>
 			</div>
 
@@ -144,7 +147,7 @@ export default function RecipesPage() {
 				<div className="lg:col-span-1">
 					<FilterPanel
 						recipes={recipes}
-						selectedFilters={selectedFilters}
+						selectedFilters={effectiveFilters}
 						onFilterChange={handleFilterChange}
 					/>
 				</div>
